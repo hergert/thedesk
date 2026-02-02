@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "moltbot-sandbox",
+  "name": "thedesk-clawagent",
+  "account_id": "d4ca2ffcbf66d256bb1d333e523c3a2f",
   "main": "src/index.ts",
   "compatibility_date": "2025-05-06",
   "compatibility_flags": ["nodejs_compat"],
@@ -59,7 +60,7 @@
   "r2_buckets": [
     {
       "binding": "MOLTBOT_BUCKET",
-      "bucket_name": "moltbot-data",
+      "bucket_name": "thedesk-clawagent",
     },
   ],
   // Cron trigger to sync moltbot data to R2 every 5 minutes
