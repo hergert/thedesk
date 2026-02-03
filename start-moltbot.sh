@@ -181,6 +181,17 @@ if (process.env.OPENCLAW_DEV_MODE === 'true') {
     config.gateway.controlUi.allowInsecureAuth = true;
 }
 
+// Configure web access point policy
+// When behind Cloudflare Access, we can trust authenticated requests
+const webPolicy = process.env.OPENCLAW_WEB_POLICY || 'pairing';
+if (webPolicy === 'open') {
+    console.log('Web access policy: open (trusting proxy authentication)');
+    config.accessPoints = config.accessPoints || {};
+    config.accessPoints.web = config.accessPoints.web || {};
+    config.accessPoints.web.policy = 'open';
+    config.accessPoints.web.allowFrom = ['*'];
+}
+
 // Telegram configuration
 if (process.env.TELEGRAM_BOT_TOKEN) {
     config.channels.telegram = config.channels.telegram || {};
