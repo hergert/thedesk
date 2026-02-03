@@ -223,6 +223,14 @@ app.all('*', async (c) => {
 
   console.log('[PROXY] Handling request:', url.pathname);
 
+  // Auto-inject gateway token for Access-authenticated users
+  // This allows authenticated users to access without ?token= in URL
+  const accessUser = c.get('accessUser');
+  if (accessUser && c.env.MOLTBOT_GATEWAY_TOKEN && !url.searchParams.has('token')) {
+    url.searchParams.set('token', c.env.MOLTBOT_GATEWAY_TOKEN);
+    console.log('[PROXY] Auto-injected gateway token for authenticated user:', accessUser.email);
+  }
+
   // Check if gateway is already running
   const existingProcess = await findExistingMoltbotProcess(sandbox);
   const isGatewayReady = existingProcess !== null && existingProcess.status === 'running';
@@ -269,11 +277,17 @@ app.all('*', async (c) => {
   // Proxy to Moltbot with WebSocket message interception
   if (isWebSocketRequest) {
     console.log('[WS] Proxying WebSocket connection to Moltbot');
-    console.log('[WS] URL:', request.url);
+    console.log('[WS] URL:', url.toString());
     console.log('[WS] Search params:', url.search);
 
+    // Create a new request with the (possibly modified) URL that includes auto-injected token
+    const wsRequest = new Request(url.toString(), {
+      method: request.method,
+      headers: request.headers,
+    });
+
     // Get WebSocket connection to the container
-    const containerResponse = await sandbox.wsConnect(request, MOLTBOT_PORT);
+    const containerResponse = await sandbox.wsConnect(wsRequest, MOLTBOT_PORT);
     console.log('[WS] wsConnect response status:', containerResponse.status);
 
     // Get the container-side WebSocket
@@ -370,7 +384,14 @@ app.all('*', async (c) => {
   }
 
   console.log('[HTTP] Proxying:', url.pathname + url.search);
-  const httpResponse = await sandbox.containerFetch(request, MOLTBOT_PORT);
+
+  // Create a new request with the (possibly modified) URL that includes auto-injected token
+  const httpRequest = new Request(url.toString(), {
+    method: request.method,
+    headers: request.headers,
+    body: request.body,
+  });
+  const httpResponse = await sandbox.containerFetch(httpRequest, MOLTBOT_PORT);
   console.log('[HTTP] Response status:', httpResponse.status);
 
   // Add debug header to verify worker handled the request
