@@ -226,9 +226,15 @@ app.all('*', async (c) => {
   // Auto-inject gateway token for Access-authenticated users
   // This allows authenticated users to access without ?token= in URL
   const accessUser = c.get('accessUser');
+  console.log('[PROXY] accessUser:', accessUser ? accessUser.email : 'NOT SET');
+  console.log('[PROXY] MOLTBOT_GATEWAY_TOKEN set:', !!c.env.MOLTBOT_GATEWAY_TOKEN);
+  console.log('[PROXY] URL already has token:', url.searchParams.has('token'));
+
   if (accessUser && c.env.MOLTBOT_GATEWAY_TOKEN && !url.searchParams.has('token')) {
     url.searchParams.set('token', c.env.MOLTBOT_GATEWAY_TOKEN);
     console.log('[PROXY] Auto-injected gateway token for authenticated user:', accessUser.email);
+  } else {
+    console.log('[PROXY] Token NOT injected - conditions not met');
   }
 
   // Check if gateway is already running

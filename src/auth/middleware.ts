@@ -79,6 +79,7 @@ export function createAccessMiddleware(options: AccessMiddlewareOptions) {
 
     // Get JWT
     const jwt = extractJWT(c);
+    console.log('[AUTH] JWT found:', !!jwt, jwt ? `(${jwt.slice(0, 20)}...)` : '');
 
     if (!jwt) {
       if (type === 'html' && redirectOnMissing) {
@@ -106,6 +107,7 @@ export function createAccessMiddleware(options: AccessMiddlewareOptions) {
     // Verify JWT
     try {
       const payload = await verifyAccessJWT(jwt, teamDomain, expectedAud);
+      console.log('[AUTH] JWT verified successfully for:', payload.email);
       c.set('accessUser', { email: payload.email, name: payload.name });
       await next();
     } catch (err) {
