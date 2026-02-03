@@ -13,11 +13,11 @@ const debug = new Hono<AppEnv>();
 debug.get('/version', async (c) => {
   const sandbox = c.get('sandbox');
   try {
-    // Get moltbot version (CLI is still named clawdbot until upstream renames)
-    const versionProcess = await sandbox.startProcess('clawdbot --version');
+    // Get openclaw version
+    const versionProcess = await sandbox.startProcess('openclaw --version');
     await new Promise(resolve => setTimeout(resolve, 500));
     const versionLogs = await versionProcess.getLogs();
-    const moltbotVersion = (versionLogs.stdout || versionLogs.stderr || '').trim();
+    const openclawVersion = (versionLogs.stdout || versionLogs.stderr || '').trim();
 
     // Get node version
     const nodeProcess = await sandbox.startProcess('node --version');
@@ -26,7 +26,7 @@ debug.get('/version', async (c) => {
     const nodeVersion = (nodeLogs.stdout || '').trim();
 
     return c.json({
-      moltbot_version: moltbotVersion,
+      openclaw_version: openclawVersion,
       node_version: nodeVersion,
     });
   } catch (error) {
